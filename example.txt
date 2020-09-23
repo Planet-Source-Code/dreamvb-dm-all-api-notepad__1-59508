@@ -1,0 +1,43 @@
+Private Sub Command1_Click()
+Dim nErr As Error
+Dim StrErr As String
+On Error GoTo AdoError:
+    
+    ' This example just shows you thos Properties of a databaes connection
+    Me.MousePointer = vbHourglass
+    Erase AdoConPropValue()
+    lstprops.Clear
+    ReDim AdoConPropValue(0)
+    Set AdoConn = New Connection ' create ado object
+    AdoConn.ConnectionString = "Data Source=..\db1.mdb" ' create connection to the database
+    AdoConn.Mode = adModeRead ' Read mode only
+    AdoConn.Provider = "Microsoft.Jet.OLEDB.4.0" ' set the Provider
+    AdoConn.Open ' open the connection
+  
+    For Each Item In AdoConn.Properties
+        lstprops.AddItem Item.Name
+        ' We store the value of the AdoConn.Properties in an array
+        ReDim Preserve AdoConPropValue(0 To UBound(AdoConPropValue) + 1) ' Resize array
+        AdoConPropValue(UBound(AdoConPropValue)) = Item.Value ' Add value to the array
+    Next
+    
+    AdoConn.Close ' we can now close the connection
+    Set AdoConn = Nothing ' destroy the ado object
+    Me.MousePointer = vbDefault
+    Exit Sub
+AdoError:
+    ' This will be triggered if any errors have been found
+    For Each nErr In AdoConn.Errors
+        StrErr = "Errors: " & AdoConn.Errors.Count & " found" & vbCrLf
+        StrErr = StrErr & "Number: " & nErr.Number & vbCrLf
+        StrErr = StrErr & "Description: " & nErr.Description & vbCrLf
+        StrErr = StrErr & "NativeError: " & nErr.NativeError & vbCrLf
+        StrErr = StrErr & "SQLState: " & nErr.SQLState & vbCrLf
+        StrErr = StrErr & "Source: " & nErr.Source & vbCrLf
+    Next
+
+    MsgBox StrErr, vbInformation, "Ado Error" ' show the error
+    StrErr = ""
+    Unload frmmain
+    
+End Sub
